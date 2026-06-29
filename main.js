@@ -16,14 +16,42 @@ nav.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', () => nav.classList.remove('open'));
 });
 
-// Contact form — show success state
+// Contact form — submit to Web3Forms and email contact@firstraypm.com
 const form = document.getElementById('contact-form');
 const successMsg = document.getElementById('form-success');
+const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
 if (form) {
-  form.addEventListener('submit', (e) => {
+  // Mirror the user's email into the replyto hidden field
+  const emailInput = form.querySelector('#email');
+  const replytoInput = form.querySelector('[name="replyto"]');
+  if (emailInput && replytoInput) {
+    emailInput.addEventListener('input', () => { replytoInput.value = emailInput.value; });
+  }
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    form.style.display = 'none';
-    successMsg.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+
+    const data = new FormData(form);
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: data
+      });
+      const json = await res.json();
+      if (json.success) {
+        form.style.display = 'none';
+        successMsg.style.display = 'block';
+      } else {
+        throw new Error(json.message || 'Submission failed');
+      }
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send My Request';
+      alert('Sorry, something went wrong. Please email us directly at contact@firstraypm.com');
+    }
   });
 }
 
