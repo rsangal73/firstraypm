@@ -28,13 +28,11 @@ if (form) {
     submitBtn.textContent = 'Sending…';
 
     const data = Object.fromEntries(new FormData(form));
-    // botcheck must be false/absent — leave the hidden checkbox unchecked
-    data.botcheck = false;
 
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
       const json = await res.json();
@@ -42,7 +40,7 @@ if (form) {
         form.style.display = 'none';
         successMsg.style.display = 'block';
       } else {
-        throw new Error(json.message || 'Submission failed');
+        throw new Error(json.error || 'Submission failed');
       }
     } catch (err) {
       submitBtn.disabled = false;
