@@ -22,23 +22,20 @@ const successMsg = document.getElementById('form-success');
 const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
 
 if (form) {
-  // Mirror the user's email into the replyto hidden field
-  const emailInput = form.querySelector('#email');
-  const replytoInput = form.querySelector('[name="replyto"]');
-  if (emailInput && replytoInput) {
-    emailInput.addEventListener('input', () => { replytoInput.value = emailInput.value; });
-  }
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.disabled = true;
     submitBtn.textContent = 'Sending…';
 
-    const data = new FormData(form);
+    const data = Object.fromEntries(new FormData(form));
+    // botcheck must be false/absent — leave the hidden checkbox unchecked
+    data.botcheck = false;
+
     try {
       const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        body: data
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
       });
       const json = await res.json();
       if (json.success) {
